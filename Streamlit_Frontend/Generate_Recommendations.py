@@ -18,5 +18,6 @@ class Generator:
             'ingredients':self.ingredients,
             'params':self.params
         }
-        response=requests.post(url='http://backend:8080/predict/',data=json.dumps(request))
+        headers = {'Content-Type': 'application/json'}
+        response=requests.post(url='http://backend:8080/predict/', data=json.dumps(request), headers=headers)
         return response
