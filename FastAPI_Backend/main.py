@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from pydantic import BaseModel,conlist
+from pydantic import BaseModel, Field
 from typing import List,Optional
 import pandas as pd
 from model import recommend,output_recommended_recipes
@@ -10,14 +10,14 @@ dataset=pd.read_csv('../Data/dataset.csv',compression='gzip')
 app = FastAPI()
 
 
-class params(BaseModel):
+class Params(BaseModel):
     n_neighbors:int=5
     return_distance:bool=False
 
 class PredictionIn(BaseModel):
-    nutrition_input:conlist(float, min_items=9, max_items=9)
-    ingredients:list[str]=[]
-    params:Optional[params]
+    nutrition_input: List[float] = Field(..., min_length=9, max_length=9)
+    ingredients: List[str] = Field(default_factory=list)
+    params: Optional[Params] = None
 
 
 class Recipe(BaseModel):
@@ -48,7 +48,8 @@ def home():
 
 @app.post("/predict/",response_model=PredictionOut)
 def update_item(prediction_input:PredictionIn):
-    recommendation_dataframe=recommend(dataset,prediction_input.nutrition_input,prediction_input.ingredients,prediction_input.params.dict())
+    params_dict = prediction_input.params.dict() if prediction_input.params is not None else {}
+    recommendation_dataframe=recommend(dataset,prediction_input.nutrition_input,prediction_input.ingredients,params_dict)
     output=output_recommended_recipes(recommendation_dataframe)
     if output is None:
         return {"output":None}
