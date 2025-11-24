@@ -108,3 +108,28 @@ https://diet-recommendation-system.streamlit.app/
   url          = {https://doi.org/10.5281/zenodo.12507829}
 }
 ```
+
+## Diagram
+``` mermaid
+flowchart TD
+    Start([App Startup]) --> Init[Initialize FastAPI App]
+
+    Init --> Startup[Startup Event]
+    Startup --> LoadDataset[Load Dataset]
+
+    LoadDataset -->|Success| Pretrain[Pretrain Model]
+    LoadDataset -->|Failure| DataError[Fail Initialization]
+
+    Pretrain -->|Success| Ready[App Ready]
+    Pretrain -->|Failure| PretrainError[Fail Initialization]
+
+    Ready --> HealthCheck[GET /]
+    HealthCheck --> ReturnHealth[Return Health Status]
+
+    Ready --> Predict[POST /predict/]
+    Predict --> Recommend[Generate Recipe Recommendations]
+    Recommend --> CheckOutput{Output is None?}
+
+    CheckOutput -->|Yes| EmptyOutput[Return Empty Response]
+    CheckOutput -->|No| Recipes[Return Recipes]
+```
